@@ -55,13 +55,34 @@ This enables:
 
 Framework used: MITRE ATT&CK
 
-| Stage | Technique |
-|------|-----------|
-| Initial Access | Phishing (Employment lure) |
-| Execution | Manual Gmail sending |
-| Collection | Sensitive Personal Data |
-| Defense Evasion | Trusted webmail infrastructure |
-| Impact | Identity theft |
+## MITRE ATT&CK Mapping
+
+| Tactic | Technique ID | Technique Name | Evidence in This Incident |
+|--------|-------------|----------------|--------------------------|
+| Resource Development | T1585.002 | Establish Accounts: Email Accounts | Attacker created `attainingconsultancyportia@gmail.com` using free consumer Gmail to avoid corporate domain costs and traceability |
+| Resource Development | T1586.002 | Compromise Accounts: Email Accounts | Attacker leveraged freerecruit.co.za job portal to identify and target active job seekers |
+| Initial Access | T1566.001 | Phishing: Spearphishing via Service | Email subject included victim's full name scraped from freerecruit.co.za — targeted spearphish, not mass spam |
+| Defense Evasion | T1036 | Masquerading | Impersonated legitimate recruitment consultancy "Attaining Consultancy" with no verifiable registration |
+| Defense Evasion | T1656 | Impersonation | Posed as "Miss Portia Tshabalala" — recruiter persona with name inconsistency (signed as "Porta") suggesting template reuse |
+| Defense Evasion | T1665 | Hide Infrastructure | Used Gmail infrastructure (mail-sor-f41.google.com / 209.85.220.41) — all authentication checks pass, hiding malicious intent behind trusted provider |
+| Collection | T1119 | Automated Collection | Systematic document harvesting: ID, qualifications, police clearance, ITC report requested via WhatsApp |
+| Collection | T1213 | Data from Information Repositories | CV data scraped from freerecruit.co.za to personalise the lure and increase legitimacy |
+| Credential Access | T1528 | Steal Application Access Token | Secondary hook: offered to "assist" victim in obtaining clearance/ITC — likely leads to fraudulent document service capturing additional credentials |
+| Impact | T1565 | Data Manipulation | Intended use of harvested documents: identity fraud, SIM swap, loan fraud, synthetic identity creation |
+
+---
+
+## Authentication Analysis
+
+| Control | Result | Analyst Note |
+|---------|--------|--------------|
+| SPF | ✅ PASS | Confirms sending IP 209.85.220.41 is authorised for gmail.com — does NOT validate sender identity |
+| DKIM | ✅ PASS | Cryptographic signature valid for gmail.com — confirms message integrity only |
+| DMARC | ✅ PASS (p=NONE) | **Critical weakness:** gmail.com DMARC policy is `p=NONE` — monitoring only, no enforcement. Even a DMARC fail would trigger zero automated action. Attacker exploited this deliberately. |
+| ARC | ✅ PASS (i=1, i=2) | Two-hop Gmail-to-Gmail delivery chain — no tampering in transit, no intermediary relay |
+| DARA | ✅ PASS | Google's internal domain authentication — consistent with direct Gmail send |
+
+> ⚠️ **SOC Key Takeaway:** All 5 authentication controls passed. This email would bypass most automated phishing filters. Detection requires content correlation + sender reputation analysis, NOT authentication results.
 
 ---
 
