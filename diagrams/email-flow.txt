@@ -1,0 +1,13 @@
+Attacker Gmail Account
+        |
+        v
+Google SMTP (209.85.220.41)
+        |
+        v
+Gmail MX Servers
+        |
+        v
+Victim Inbox
+        |
+        v
+WhatsApp Data Harvesting Attempt
